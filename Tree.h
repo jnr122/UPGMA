@@ -19,11 +19,15 @@ struct Sequence {
 
 class Tree {
 public:
-    Tree(vector<Sequence> seqs);
+    Tree(vector<Sequence> &seqs);
 
 private:
+    vector<Sequence> seqs;
     vector<vector<int>> distance_matrix;
+
+    void populate();
     void calculate();
+
 };
 
 

@@ -16,6 +16,17 @@ ostream &operator<<(ostream &os, const Sequence &sequence) {
     return os;
 }
 
-Tree::Tree(vector<Sequence> seqs) : seqs(seqs) {
+// Tree constructor
+Tree::Tree(vector<Sequence> &seqs) : seqs(seqs) {
+
+}
+
+// Populate default matrix
+void populate() {
+
+}
+
+// Calculations for distance matrix
+void calculate() {
 
 }
