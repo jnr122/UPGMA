@@ -26,6 +26,9 @@ int main() {
     for (int i = 0; i < seqs.size(); i++) {
         cout << seqs[i] << endl;
     }
+    Tree t = Tree(seqs);
+
+    cout << t;
 
     return 0;
 }

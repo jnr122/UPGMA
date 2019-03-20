@@ -3,6 +3,7 @@
 //
 #include <string>
 #include <vector>
+#include <ostream>
 
 #ifndef UPGMA_TREE_H
 #define UPGMA_TREE_H
@@ -21,12 +22,20 @@ class Tree {
 public:
     Tree(vector<Sequence> &seqs);
 
+    friend ostream &operator<<(ostream &os, const Tree &tree);
+
+    const vector<Sequence> &getSeqs() const;
+
+    const vector<vector<int>> &getDistance_matrix() const;
+
 private:
     vector<Sequence> seqs;
     vector<vector<int>> distance_matrix;
 
     void populate();
     void calculate();
+    const int compare(Sequence s1, Sequence s2);
+
 
 };
 
