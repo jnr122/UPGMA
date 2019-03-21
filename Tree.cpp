@@ -2,7 +2,6 @@
 // Created by Jonah Rubin on 2019-03-19.
 //
 #include <ostream>
-#include <iostream>
 
 #include "Tree.h"
 
@@ -55,7 +54,6 @@ const int Tree::compare(Sequence s1, Sequence s2) {
             ++distance;
         }
     }
-    cout << distance << endl;
     return distance;
 }
 
