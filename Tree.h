@@ -30,7 +30,7 @@ public:
      * Tree constructor
      * @param seqs a vector of Sequence objects
      */
-    Tree(vector<Sequence> &seqs);
+    Tree(vector<vector<Sequence>> &seqs);
 
     /**
      * Overloaded << opreator for tree
@@ -43,12 +43,12 @@ public:
     /**
      * Getters
      */
-    const vector<Sequence> &getSeqs() const;
-    const vector<vector<int>> &getDistance_matrix() const;
+    const vector<vector<Sequence>> &getSeqs() const;
+    const vector<vector<int>> &getDistanceMatrix() const;
 
 private:
-    vector<Sequence> seqs;
-    vector<vector<int>> distance_matrix;
+    vector<vector<Sequence>> seqs;
+    vector<vector<int>> distanceMatrix;
 
     /**
      * Populate a default matrix
@@ -58,7 +58,7 @@ private:
     /**
      * Calculate values for matrix
      */
-    void calculate();
+    void calculateInitial();
 
     /**
      * Compare two sequence objects
