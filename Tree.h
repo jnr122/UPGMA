@@ -21,6 +21,10 @@ struct Sequence {
     Sequence(string name, string str);
     friend ostream &operator<<(ostream &os, const Sequence &sequence);
 
+    bool operator==(const Sequence &rhs) const;
+
+    bool operator!=(const Sequence &rhs) const;
+
 };
 
 class Tree {
@@ -28,9 +32,9 @@ public:
 
     /**
      * Tree constructor
-     * @param seqs a vector of Sequence objects
+     * @param clusters a vector of Sequence objects of the same length
      */
-    Tree(vector<vector<Sequence>> &seqs);
+    Tree(vector<vector<Sequence>> &clusters);
 
     /**
      * Overloaded << opreator for tree
@@ -44,11 +48,10 @@ public:
      * Getters
      */
     const vector<vector<Sequence>> &getSeqs() const;
-    const vector<vector<int>> &getDistanceMatrix() const;
 
 private:
-    vector<vector<Sequence>> seqs;
-    vector<vector<int>> distanceMatrix;
+    vector<vector<Sequence>> clusters;
+    vector<vector<int>> oldDistanceMatrix;
 
     /**
      * Populate a default matrix
@@ -66,7 +69,12 @@ private:
      * @param s2
      * @return distance score
      */
-    const int compare(Sequence s1, Sequence s2);
+    const int compare(vector<Sequence> v1, vector<Sequence> v2);
+
+    /**
+     * Group two closest sequence clusters by distance
+     */
+    void group();
 
 };
 
