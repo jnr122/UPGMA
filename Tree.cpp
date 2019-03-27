@@ -16,8 +16,18 @@ ostream &operator<<(ostream &os, const Sequence &sequence) {
     return os;
 }
 
+// Cluster constructor
+Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
+    string name = "";
+    for (int i = 0; i < seqs.size(); i++) {
+        name += seqs[i].name;
+    }
+    this->name = name;
+}
+
+
 // Tree constructor
-Tree::Tree(vector<vector<Sequence>> &clusters) : clusters(clusters){
+Tree::Tree(vector<Cluster> &clusters) : clusters(clusters){
     populate();
 }
 
@@ -32,6 +42,8 @@ void Tree::populate() {
     }
     calculateInitial();
 }
+
+
 
 // Calculations for distance matrix
 void Tree::calculateInitial() {
@@ -54,17 +66,17 @@ void Tree::calculateInitial() {
 }
 
 // Comparison of Sequences
-const int Tree::compare(vector<Sequence> v1, vector<Sequence> v2) {
+const int Tree::compare(Cluster c1, Cluster c2) {
     int distance = 0;
 
-    if (v1.size() == 1 and v2.size() == 1) {
-        for (int i = 0; i < v1[0].str.size(); i++) {
-            if (v1[0].str.at(i) != v2[0].str.at(i)) {
+    if (c1.seqs.size() == 1 and c2.seqs.size() == 1) {
+        for (int i = 0; i < c1.seqs[0].str.size(); i++) {
+            if (c1.seqs[0].str.at(i) != c2.seqs[0].str.at(i)) {
                 ++distance;
             }
         }
     } else {
-        for (int i = 0; i < v1.size(); i++) {
+        for (int i = 0; i < c1.seqs.size(); i++) {
 
         }
     }
@@ -72,10 +84,10 @@ const int Tree::compare(vector<Sequence> v1, vector<Sequence> v2) {
 }
 
 void Tree::group() {
-    int min = clusters[0][0].str.size();
+    int min = clusters[0].seqs[0].str.size();
     int row, col, score;
-    for (int i = 0; i < oldDistanceMatrix.size(); i++) {
-        for (int j = 0; j < oldDistanceMatrix[0].size(); j++) {
+    for (int i = 0; i < oldDistanceMatrix.size() - 1; i++) {
+        for (int j = i + 1; j < oldDistanceMatrix[0].size(); j++) {
             score = oldDistanceMatrix[i][j];
             if (i != j and score < min) {
                 min = oldDistanceMatrix[i][j];
@@ -84,16 +96,19 @@ void Tree::group() {
             }
         }
     }
-    for (int i = 0; i < clusters[col].size(); i++) {
-        clusters[row].push_back(clusters[col][i]);
-    }
-    clusters.erase(clusters.begin()+col);
+
+    // Cluster merge method
+
+//    for (int i = 0; i < clusters[col].seqs.size(); i++) {
+//        clusters[row].seqs.push_back(clusters[col][i]);
+//    }
+//    clusters.erase(clusters.begin()+col);
 
 }
 
 // Overloaded ==
-bool Sequence::operator==(const Sequence &rhs) const {
-    return name == rhs.name && str == rhs.str;
+bool Sequence::operator==(const Sequence &seq) const {
+    return name == seq.name;
 }
 
 // Overloaded <<
@@ -102,7 +117,7 @@ ostream &operator<<(ostream &os, const Tree &tree) {
 
     os << "    ";
     for (int i = 0; i < tree.clusters.size(); i++) {
-        os << tree.clusters[i][0].name << " ";
+        os << tree.clusters[i].seqs[0].name << " ";
 
     }
     os << endl;
@@ -110,7 +125,8 @@ ostream &operator<<(ostream &os, const Tree &tree) {
     for (int i = 0; i < tree.oldDistanceMatrix.size(); i++) {
         for (int j = 0; j < tree.oldDistanceMatrix[i].size(); j++) {
             if (j == 0) {
-                os << tree.clusters[i][0].name << " ";
+                // throws BAD_EXEC exception
+                os << tree.clusters[i].seqs[0].name << " ";
             }
             os  << tree.oldDistanceMatrix[i][j] << " ";
         }
@@ -120,7 +136,6 @@ ostream &operator<<(ostream &os, const Tree &tree) {
 }
 
 // Getters
-const vector<vector<Sequence>> &Tree::getSeqs() const {
+const vector<Cluster> &Tree::getSeqs() const {
     return clusters;
 }
-
