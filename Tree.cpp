@@ -86,6 +86,7 @@ void Tree::calculateInitial() {
 // Comparison of Sequences
 const int Tree::compare(Cluster c1, Cluster c2) {
     int distance = 0;
+    int c1Ind, c2Ind;
 
     if (c1.seqs.size() == 1 and c2.seqs.size() == 1) {
         for (int i = 0; i < c1.seqs[0].str.size(); i++) {
@@ -94,9 +95,26 @@ const int Tree::compare(Cluster c1, Cluster c2) {
             }
         }
     } else {
-        for (int i = 0; i < c1.seqs.size(); i++) {
-            // set up cluster comparisons. If they exist, use their values. Otherwise compare individuals.
+        c1Ind = contains(c1);
+        c2Ind = contains(c2);
+
+        // both contained in old clusters/matrix
+        if (c1Ind != -1 and c2Ind != -1) {
+            return oldDistanceMatrix[c1Ind][c2Ind];
         }
+
+        // 1 not 2 contained in old clusters/matrix
+        if (c1Ind != -1 and c2Ind == -1) {
+
+        }
+
+        // 2 not 1 contained in old clusters/matrix
+        if (c2Ind != -1 and c1Ind == -1) {
+
+        }
+
+        // neither contained in old clusters/matrix (is this possible?)
+
     }
     return distance;
 }
