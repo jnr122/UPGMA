@@ -19,10 +19,9 @@ struct Sequence {
      * @param str
      */
     Sequence(string name, string str);
-    friend ostream &operator<<(ostream &os, const Sequence &sequence);
 
+    friend ostream &operator<<(ostream &os, const Sequence &sequence);
     bool operator==(const Sequence &rhs) const;
-    bool operator!=(const Sequence &rhs) const;
 
 };
 
@@ -32,6 +31,15 @@ struct Cluster {
 
     Cluster(const vector<Sequence> &seqs);
 
+    /**
+     * Merge two clusters by concatenating names and sequence vectors
+     * @param c other cluster
+     */
+    void merge(Cluster c);
+
+    bool operator==(const Cluster &rhs) const;
+
+    bool operator!=(const Cluster &rhs) const;
 };
 
 class Tree {
@@ -57,8 +65,11 @@ public:
     const vector<Cluster> &getSeqs() const;
 
 private:
-    vector<Cluster> clusters;
+    vector<Cluster> oldClusters;
+    vector<Cluster> newClusters;
     vector<vector<int>> oldDistanceMatrix;
+    vector<vector<int>> newDistanceMatrix;
+
 
     /**
      * Populate a default matrix
@@ -82,6 +93,11 @@ private:
      * Group two closest sequence clusters by distance
      */
     void group();
+
+    /**
+     *
+     */
+     int contains(Cluster c);
 
 };
 

@@ -2,6 +2,9 @@
 // Created by Jonah Rubin on 2019-03-19.
 //
 #include <ostream>
+#include <iostream>
+
+using namespace std;
 
 #include "Tree.h"
 
@@ -16,6 +19,11 @@ ostream &operator<<(ostream &os, const Sequence &sequence) {
     return os;
 }
 
+// Overloaded sequence equality
+bool Sequence::operator==(const Sequence &seq) const {
+    return name == seq.name;
+}
+
 // Cluster constructor
 Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
     string name = "";
@@ -25,38 +33,48 @@ Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
     this->name = name;
 }
 
+// Merge two clusters
+void Cluster::merge(Cluster c) {
+    for (int i = 0; i < c.seqs.size(); i++) {
+        this->seqs.push_back(c.seqs[i]);
+    }
+    name += c.name;
+}
+
+// Overloaded Cluster ==
+bool Cluster::operator==(const Cluster &c) const {
+    return name == c.name;
+}
 
 // Tree constructor
-Tree::Tree(vector<Cluster> &clusters) : clusters(clusters){
+Tree::Tree(vector<Cluster> &clusters) : newClusters(clusters){
     populate();
 }
 
 // Populate default matrix
 void Tree::populate() {
-    for (int i = 0; i < clusters.size(); i++) {
+    for (int i = 0; i < newClusters.size(); i++) {
         vector<int> vec;
-        for (int j = 0; j < clusters.size(); j++) {
+        for (int j = 0; j < newClusters.size(); j++) {
             vec.push_back(0);
         }
-        oldDistanceMatrix.push_back(vec);
+        newDistanceMatrix.push_back(vec);
     }
     calculateInitial();
 }
 
-
-
 // Calculations for distance matrix
 void Tree::calculateInitial() {
     int distance;
-    for (int i = 0; i < clusters.size() - 1; i++) {
-        for (int j = i + 1; j < clusters.size(); j++) {
+    for (int i = 0; i < newClusters.size() - 1; i++) {
+        for (int j = i + 1; j < newClusters.size(); j++) {
 
             if (i == j) {
-                oldDistanceMatrix[i][j] = 0;
+                newDistanceMatrix[i][j] = 0;
             } else {
-                distance = compare(clusters[i], clusters[j]);
-                oldDistanceMatrix[i][j] = distance;
-                oldDistanceMatrix[j][i] = distance;
+                distance = compare(newClusters[i], newClusters[j]);
+                newDistanceMatrix[i][j] = distance;
+                newDistanceMatrix[j][i] = distance;
             }
         }
     }
@@ -77,38 +95,40 @@ const int Tree::compare(Cluster c1, Cluster c2) {
         }
     } else {
         for (int i = 0; i < c1.seqs.size(); i++) {
-
+            // set up cluster comparisons. If they exist, use their values. Otherwise compare individuals.
         }
     }
     return distance;
 }
 
+// Check to see if cluster has already been used in the old matrix
+int Tree::contains(Cluster c) {
+    for (int i = 0; i < oldClusters.size(); i++) {
+        if (oldClusters[i] == c) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void Tree::group() {
-    int min = clusters[0].seqs[0].str.size();
+    int min = newClusters[0].seqs[0].str.size();
     int row, col, score;
-    for (int i = 0; i < oldDistanceMatrix.size() - 1; i++) {
-        for (int j = i + 1; j < oldDistanceMatrix[0].size(); j++) {
-            score = oldDistanceMatrix[i][j];
+    for (int i = 0; i < newDistanceMatrix.size() - 1; i++) {
+        for (int j = i + 1; j < newDistanceMatrix[0].size(); j++) {
+            score = newDistanceMatrix[i][j];
             if (i != j and score < min) {
-                min = oldDistanceMatrix[i][j];
+                min = newDistanceMatrix[i][j];
                 row = i;
                 col = j;
             }
         }
     }
+    oldClusters = newClusters;
 
-    // Cluster merge method
+    newClusters[row].merge(newClusters[col]);
+    newClusters.erase(newClusters.begin()+col);
 
-//    for (int i = 0; i < clusters[col].seqs.size(); i++) {
-//        clusters[row].seqs.push_back(clusters[col][i]);
-//    }
-//    clusters.erase(clusters.begin()+col);
-
-}
-
-// Overloaded ==
-bool Sequence::operator==(const Sequence &seq) const {
-    return name == seq.name;
 }
 
 // Overloaded <<
@@ -116,19 +136,19 @@ ostream &operator<<(ostream &os, const Tree &tree) {
     os << "distance_matrix: " << endl;
 
     os << "    ";
-    for (int i = 0; i < tree.clusters.size(); i++) {
-        os << tree.clusters[i].seqs[0].name << " ";
+    for (int i = 0; i < tree.newClusters.size(); i++) {
+        os << tree.newClusters[i].name << " ";
 
     }
     os << endl;
 
-    for (int i = 0; i < tree.oldDistanceMatrix.size(); i++) {
-        for (int j = 0; j < tree.oldDistanceMatrix[i].size(); j++) {
+    for (int i = 0; i < tree.newDistanceMatrix.size(); i++) {
+        for (int j = 0; j < tree.newDistanceMatrix[i].size(); j++) {
             if (j == 0) {
                 // throws BAD_EXEC exception
-                os << tree.clusters[i].seqs[0].name << " ";
+                os << tree.newClusters[i].name << " ";
             }
-            os  << tree.oldDistanceMatrix[i][j] << " ";
+            os  << tree.newDistanceMatrix[i][j] << " ";
         }
         os << endl;
     }
@@ -137,5 +157,5 @@ ostream &operator<<(ostream &os, const Tree &tree) {
 
 // Getters
 const vector<Cluster> &Tree::getSeqs() const {
-    return clusters;
+    return newClusters;
 }
