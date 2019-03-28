@@ -28,6 +28,7 @@ struct Sequence {
 struct Cluster {
     string name;
     vector<Sequence> seqs;
+    vector<string> oldNames;
 
     Cluster(const vector<Sequence> &seqs);
 
@@ -91,6 +92,11 @@ private:
      * Calculate initial values for matrix
      */
     void calculateInitial();
+
+    /**
+     * All subsequence calculations
+     */
+    void recalculate();
 
     /**
      * Compare two sequence objects

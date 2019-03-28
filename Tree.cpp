@@ -38,6 +38,9 @@ void Cluster::merge(Cluster c) {
     for (int i = 0; i < c.seqs.size(); i++) {
         this->seqs.push_back(c.seqs[i]);
     }
+    oldNames = {};
+    oldNames.push_back(name);
+    oldNames.push_back(c.name);
     name = strip(name);
     c.name = strip(c.name);
     name += "/" + c.name;
@@ -72,6 +75,8 @@ bool Cluster::operator==(const Cluster &c) const {
 // Tree constructor
 Tree::Tree(vector<Cluster> &clusters) : newClusters(clusters){
     populate();
+    calculateInitial();
+
 }
 
 // Populate default matrix
@@ -83,12 +88,11 @@ void Tree::populate() {
         }
         newDistanceMatrix.push_back(vec);
     }
-    calculateInitial();
 }
 
 // Calculations for distance matrix
 void Tree::calculateInitial() {
-    int distance;
+    double distance;
     for (int i = 0; i < newClusters.size() - 1; i++) {
         for (int j = i + 1; j < newClusters.size(); j++) {
 
@@ -102,8 +106,45 @@ void Tree::calculateInitial() {
         }
     }
 
-//    group();
+    recalculate();
+}
 
+void Tree::recalculate() {
+    while (newClusters.size() > 1) {
+
+        cout << "old: ";
+        for (int i = 0; i < oldClusters.size(); i++) {
+            cout << oldClusters[i].name << " ";
+        }
+        cout << endl;
+        cout << "new: ";
+
+        for (int i = 0; i < newClusters.size(); i++) {
+            cout << newClusters[i].name << " ";
+        }
+
+        cout << endl;
+
+        oldDistanceMatrix = newDistanceMatrix;
+        group();
+        newDistanceMatrix = {};
+        populate();
+
+        double distance;
+        for (int i = 0; i < newClusters.size() - 1; i++) {
+            for (int j = i + 1; j < newClusters.size(); j++) {
+
+                if (i == j) {
+                    newDistanceMatrix[i][j] = 0;
+                } else {
+                    distance = compare(newClusters[i], newClusters[j]);
+                    newDistanceMatrix[i][j] = distance;
+                    newDistanceMatrix[j][i] = distance;
+                }
+            }
+        }
+    }
+    cout << newClusters[0].name << endl;
 }
 
 // Comparison of Sequences
@@ -129,23 +170,20 @@ const double Tree::compare(Cluster c1, Cluster c2) {
         }
 
         // 1 not 2 contained in old clusters/matrix
-        if (c1Ind != -1 and c2Ind == -1) {
-            names = c2.split();
-            c2Inda = contains(names[0]);
-            c2Indb = contains(names[1]);
+        else if (c1Ind != -1 and c2Ind == -1) {
+            c2Inda = contains(c2.oldNames[0]);
+            c2Indb = contains(c2.oldNames[0]);
             return (oldDistanceMatrix[c1Ind][c2Inda] + oldDistanceMatrix[c1Ind][c2Indb])/2;
         }
 
         // 2 not 1 contained in old clusters/matrix
-        if (c2Ind != -1 and c1Ind == -1) {
-            names = c1.split();
-            c1Inda = contains(names[0]);
-            c1Indb = contains(names[1]);
+        else if (c2Ind != -1 and c1Ind == -1) {
+            c1Inda = contains(c1.oldNames[0]);
+            c1Indb = contains(c1.oldNames[1]);
             return (oldDistanceMatrix[c1Inda][c2Ind] + oldDistanceMatrix[c1Indb][c2Ind])/2;
+        }  else {
+            cout << "no" << endl;
         }
-
-        // neither contained in old clusters/matrix (is this possible?)
-
     }
     return distance;
 }
@@ -174,10 +212,8 @@ void Tree::group() {
         }
     }
     oldClusters = newClusters;
-
     newClusters[row].merge(newClusters[col]);
     newClusters.erase(newClusters.begin()+col);
-
 }
 
 // Overloaded <<
