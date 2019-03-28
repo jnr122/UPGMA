@@ -38,7 +38,30 @@ void Cluster::merge(Cluster c) {
     for (int i = 0; i < c.seqs.size(); i++) {
         this->seqs.push_back(c.seqs[i]);
     }
-    name += c.name;
+    name = strip(name);
+    c.name = strip(c.name);
+    name += "/" + c.name;
+}
+
+// remove sentinel value from cluster name
+string Cluster::strip(string s) {
+    string newS = "";
+    for (int i = 0; i < s.size(); i++ ) {
+        if (s[i] != '/') {
+            newS += s[i];
+        }
+    }
+    return newS;
+}
+
+vector<string> Cluster::split() {
+    vector<string> names;
+    int sentInd = name.find('/');
+
+    names.push_back(name.substr(0, sentInd));
+    names.push_back(name.substr(sentInd + 1));
+
+    return names;
 }
 
 // Overloaded Cluster ==
@@ -54,7 +77,7 @@ Tree::Tree(vector<Cluster> &clusters) : newClusters(clusters){
 // Populate default matrix
 void Tree::populate() {
     for (int i = 0; i < newClusters.size(); i++) {
-        vector<int> vec;
+        vector<double> vec;
         for (int j = 0; j < newClusters.size(); j++) {
             vec.push_back(0);
         }
@@ -79,15 +102,17 @@ void Tree::calculateInitial() {
         }
     }
 
-    group();
+//    group();
 
 }
 
 // Comparison of Sequences
-const int Tree::compare(Cluster c1, Cluster c2) {
+const double Tree::compare(Cluster c1, Cluster c2) {
     int distance = 0;
-    int c1Ind, c2Ind;
+    int c1Ind, c1Inda, c1Indb, c2Ind, c2Inda, c2Indb;
+    vector<string> names;
 
+    // bit redundant
     if (c1.seqs.size() == 1 and c2.seqs.size() == 1) {
         for (int i = 0; i < c1.seqs[0].str.size(); i++) {
             if (c1.seqs[0].str.at(i) != c2.seqs[0].str.at(i)) {
@@ -95,8 +120,8 @@ const int Tree::compare(Cluster c1, Cluster c2) {
             }
         }
     } else {
-        c1Ind = contains(c1);
-        c2Ind = contains(c2);
+        c1Ind = contains(c1.name);
+        c2Ind = contains(c2.name);
 
         // both contained in old clusters/matrix
         if (c1Ind != -1 and c2Ind != -1) {
@@ -105,12 +130,18 @@ const int Tree::compare(Cluster c1, Cluster c2) {
 
         // 1 not 2 contained in old clusters/matrix
         if (c1Ind != -1 and c2Ind == -1) {
-
+            names = c2.split();
+            c2Inda = contains(names[0]);
+            c2Indb = contains(names[1]);
+            return (oldDistanceMatrix[c1Ind][c2Inda] + oldDistanceMatrix[c1Ind][c2Indb])/2;
         }
 
         // 2 not 1 contained in old clusters/matrix
         if (c2Ind != -1 and c1Ind == -1) {
-
+            names = c1.split();
+            c1Inda = contains(names[0]);
+            c1Indb = contains(names[1]);
+            return (oldDistanceMatrix[c1Inda][c2Ind] + oldDistanceMatrix[c1Indb][c2Ind])/2;
         }
 
         // neither contained in old clusters/matrix (is this possible?)
@@ -120,9 +151,9 @@ const int Tree::compare(Cluster c1, Cluster c2) {
 }
 
 // Check to see if cluster has already been used in the old matrix
-int Tree::contains(Cluster c) {
+int Tree::contains(string name) {
     for (int i = 0; i < oldClusters.size(); i++) {
-        if (oldClusters[i] == c) {
+        if (oldClusters[i].name == name) {
             return i;
         }
     }

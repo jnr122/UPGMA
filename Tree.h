@@ -37,9 +37,20 @@ struct Cluster {
      */
     void merge(Cluster c);
 
+    /**
+     * String to strip of sentinel value
+     * @param s
+     * @return stripped string
+     */
+    string strip(string s);
+
+    /**
+     * @return cluster name split at sentinel value
+     */
+    vector<string> split();
+
     bool operator==(const Cluster &rhs) const;
 
-    bool operator!=(const Cluster &rhs) const;
 };
 
 class Tree {
@@ -67,8 +78,8 @@ public:
 private:
     vector<Cluster> oldClusters;
     vector<Cluster> newClusters;
-    vector<vector<int>> oldDistanceMatrix;
-    vector<vector<int>> newDistanceMatrix;
+    vector<vector<double>> oldDistanceMatrix;
+    vector<vector<double>> newDistanceMatrix;
 
 
     /**
@@ -87,7 +98,7 @@ private:
      * @param s2
      * @return distance score
      */
-    const int compare(Cluster c1, Cluster c2);
+    const double compare(Cluster c1, Cluster c2);
 
     /**
      * Group two closest sequence clusters by distance
@@ -95,9 +106,10 @@ private:
     void group();
 
     /**
-     *
+     * Check if a cluster is contained in the old distance matrix
+     * @param c the cluster
      */
-     int contains(Cluster c);
+    int contains(string name);
 
 };
 
