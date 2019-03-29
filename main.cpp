@@ -12,28 +12,31 @@ int main() {
     vector<Cluster> seqs;
     vector<Sequence> seq;
 
+
     // read file, create sequence vector
     ifstream f_in;
-    f_in.open("3.in");
+    f_in.open("cmake-build-debug/3.in");
+
+    if (!f_in) {
+        cout << "file not found " << endl;
+    }
     while(f_in && f_in.peek() != EOF) {
-        seq = {};
+        seq ={};
         getline(f_in, name);
         getline(f_in, str);
         name = name.substr(1);
         seq.push_back(Sequence(name, str));
         seqs.push_back(Cluster(seq));
-
-
     }
     f_in.close();
 
+    cout << "Size" << seqs.size() << endl;
     // print sequence vector
     for (int i = 0; i < seqs.size(); i++) {
         cout << seqs[i].seqs[0] << endl;
     }
     Tree t = Tree(seqs);
-
-    cout << t;
+    cout << "Successfully ran CPP" << endl;
 
     return 0;
 }

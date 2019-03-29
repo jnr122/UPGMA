@@ -3,10 +3,11 @@
 //
 #include <ostream>
 #include <iostream>
-
-using namespace std;
+#include <fstream>
 
 #include "Tree.h"
+
+using namespace std;
 
 // Sequence constructor
 Sequence::Sequence(string name, string str): name(name), str(str) {
@@ -27,6 +28,7 @@ bool Sequence::operator==(const Sequence &seq) const {
 // Cluster constructor
 Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
     string name = "";
+    string printString = "";
     for (int i = 0; i < seqs.size(); i++) {
         name += seqs[i].name;
     }
@@ -34,16 +36,38 @@ Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
 }
 
 // Merge two clusters
-void Cluster::merge(Cluster c) {
+void Cluster::merge(Cluster c, double min) {
     for (int i = 0; i < c.seqs.size(); i++) {
         this->seqs.push_back(c.seqs[i]);
     }
+
+    // set up merge of clusters
+    dist = min/2;
     oldNames = {};
     oldNames.push_back(name);
     oldNames.push_back(c.name);
     name = strip(name);
     c.name = strip(c.name);
     name += "/" + c.name;
+
+    string printName = "";
+    for (int i = 0; i < name.size(); i++) {
+
+        if (i == 0) {
+            printName += name[i];
+        } else if (name[i] != 'S' and name[i] != '/') {
+            printName += name[i];
+        }
+    }
+
+    printString += (printName + ":" + to_string(dist) + "\n");
+
+    ofstream out2("3.02");
+    if (out2.is_open()) {
+        out2 << printString;
+
+        out2.close();
+    }
 }
 
 // remove sentinel value from cluster name
@@ -57,6 +81,7 @@ string Cluster::strip(string s) {
     return newS;
 }
 
+// Split cluster into two sub clusters
 vector<string> Cluster::split() {
     vector<string> names;
     int sentInd = name.find('/');
@@ -106,24 +131,33 @@ void Tree::calculateInitial() {
         }
     }
 
+    // file output
+    ofstream out1("3.01");
+    if (out1.is_open()) {
+        out1 << "- ";
+        for (int i = 0; i < newClusters.size(); i++) {
+            out1 << newClusters[i].name << " ";
+        }
+        out1 << "\n";
+        for (int i = 0; i < newDistanceMatrix.size(); i++) {
+            for (int j = 0; j < newDistanceMatrix[0].size(); j++) {
+                if (j == 0) {
+                    out1 << newClusters[i].name << " ";
+                }
+                out1 << newDistanceMatrix[i][j] << " ";
+            }
+            out1 << "\n";
+        }
+        out1.close();
+    }
+
+
     recalculate();
 }
 
+// repeated distance matrix calculations
 void Tree::recalculate() {
     while (newClusters.size() > 1) {
-
-        cout << "old: ";
-        for (int i = 0; i < oldClusters.size(); i++) {
-            cout << oldClusters[i].name << " ";
-        }
-        cout << endl;
-        cout << "new: ";
-
-        for (int i = 0; i < newClusters.size(); i++) {
-            cout << newClusters[i].name << " ";
-        }
-
-        cout << endl;
 
         oldDistanceMatrix = newDistanceMatrix;
         group();
@@ -144,7 +178,19 @@ void Tree::recalculate() {
             }
         }
     }
-    cout << newClusters[0].name << endl;
+
+    ofstream out3("3.03");
+    if (out3.is_open()) {
+        if (multiple) {
+            out3 << "YES";
+        } else {
+            out3 << "NO";
+        }
+
+        out3.close();
+    }
+
+
 }
 
 // Comparison of Sequences
@@ -170,14 +216,14 @@ const double Tree::compare(Cluster c1, Cluster c2) {
         }
 
         // 1 not 2 contained in old clusters/matrix
-        else if (c1Ind != -1 and c2Ind == -1) {
+        else if (c1Ind != -1) {
             c2Inda = contains(c2.oldNames[0]);
             c2Indb = contains(c2.oldNames[0]);
             return (oldDistanceMatrix[c1Ind][c2Inda] + oldDistanceMatrix[c1Ind][c2Indb])/2;
         }
 
         // 2 not 1 contained in old clusters/matrix
-        else if (c2Ind != -1 and c1Ind == -1) {
+        else if (c2Ind != -1) {
             c1Inda = contains(c1.oldNames[0]);
             c1Indb = contains(c1.oldNames[1]);
             return (oldDistanceMatrix[c1Inda][c2Ind] + oldDistanceMatrix[c1Indb][c2Ind])/2;
@@ -199,11 +245,16 @@ int Tree::contains(string name) {
 }
 
 void Tree::group() {
-    int min = newClusters[0].seqs[0].str.size();
-    int row, col, score;
+    double min = newClusters[0].seqs[0].str.size();
+    int row;
+    int col;
+    double score;
     for (int i = 0; i < newDistanceMatrix.size() - 1; i++) {
         for (int j = i + 1; j < newDistanceMatrix[0].size(); j++) {
             score = newDistanceMatrix[i][j];
+            if (score == min) {
+                multiple = true;
+            }
             if (i != j and score < min) {
                 min = newDistanceMatrix[i][j];
                 row = i;
@@ -212,7 +263,7 @@ void Tree::group() {
         }
     }
     oldClusters = newClusters;
-    newClusters[row].merge(newClusters[col]);
+    newClusters[row].merge(newClusters[col], min);
     newClusters.erase(newClusters.begin()+col);
 }
 

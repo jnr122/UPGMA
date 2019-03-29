@@ -29,6 +29,8 @@ struct Cluster {
     string name;
     vector<Sequence> seqs;
     vector<string> oldNames;
+    double dist;
+    string printString;
 
     Cluster(const vector<Sequence> &seqs);
 
@@ -36,7 +38,7 @@ struct Cluster {
      * Merge two clusters by concatenating names and sequence vectors
      * @param c other cluster
      */
-    void merge(Cluster c);
+    void merge(Cluster c, double min);
 
     /**
      * String to strip of sentinel value
@@ -79,8 +81,9 @@ public:
 private:
     vector<Cluster> oldClusters;
     vector<Cluster> newClusters;
-    vector<vector<double>> oldDistanceMatrix;
-    vector<vector<double>> newDistanceMatrix;
+    vector<vector<double> > oldDistanceMatrix;
+    vector<vector<double> > newDistanceMatrix;
+    bool multiple;
 
 
     /**
