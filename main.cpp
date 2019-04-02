@@ -15,7 +15,7 @@ int main() {
 
     // read file, create sequence vector
     ifstream f_in;
-    f_in.open("cmake-build-debug/3.in");
+    f_in.open("3.in");
 
     if (!f_in) {
         cout << "file not found " << endl;
@@ -30,13 +30,11 @@ int main() {
     }
     f_in.close();
 
-    cout << "Size" << seqs.size() << endl;
     // print sequence vector
     for (int i = 0; i < seqs.size(); i++) {
         cout << seqs[i].seqs[0] << endl;
     }
     Tree t = Tree(seqs);
-    cout << "Successfully ran CPP" << endl;
 
     return 0;
 }
