@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Tree.h"
+#include "Cluster.h"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ int main() {
 
     // print sequence vector
     for (int i = 0; i < seqs.size(); i++) {
-        cout << seqs[i].seqs[0] << endl;
+        cout << seqs[i].getSeqs()[0] << endl;
     }
     Tree t = Tree(seqs);
 

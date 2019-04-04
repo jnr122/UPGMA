@@ -1,60 +1,18 @@
 //
 // Created by Jonah Rubin on 2019-03-19.
 //
+
 #include <string>
 #include <vector>
 #include <ostream>
+
+#include "Cluster.h"
+
 
 #ifndef UPGMA_TREE_H
 #define UPGMA_TREE_H
 
 using namespace std;
-
-struct Sequence {
-    string name, str;
-
-    /**
-     * Sequence constructor
-     * @param name
-     * @param str
-     */
-    Sequence(string name, string str);
-
-    friend ostream &operator<<(ostream &os, const Sequence &sequence);
-    bool operator==(const Sequence &rhs) const;
-
-};
-
-struct Cluster {
-    string name;
-    vector<Sequence> seqs;
-    vector<string> oldNames;
-    double dist;
-    string printString;
-
-    Cluster(const vector<Sequence> &seqs);
-
-    /**
-     * Merge two clusters by concatenating names and sequence vectors
-     * @param c other cluster
-     */
-    void merge(Cluster c, double min);
-
-    /**
-     * String to strip of sentinel value
-     * @param s
-     * @return stripped string
-     */
-    string strip(string s);
-
-    /**
-     * @return cluster name split at sentinel value
-     */
-    vector<string> split();
-
-    bool operator==(const Cluster &rhs) const;
-
-};
 
 class Tree {
 public:

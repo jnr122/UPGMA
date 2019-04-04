@@ -9,94 +9,6 @@
 
 using namespace std;
 
-// Sequence constructor
-Sequence::Sequence(string name, string str): name(name), str(str) {
-
-}
-
-// Overloaded sequence output
-ostream &operator<<(ostream &os, const Sequence &sequence) {
-    os << "name: " << sequence.name << " str: " << sequence.str;
-    return os;
-}
-
-// Overloaded sequence equality
-bool Sequence::operator==(const Sequence &seq) const {
-    return name == seq.name;
-}
-
-// Cluster constructor
-Cluster::Cluster(const vector<Sequence> &seqs) : seqs(seqs) {
-    string name = "";
-    string printString = "";
-    for (int i = 0; i < seqs.size(); i++) {
-        name += seqs[i].name;
-    }
-    this->name = name;
-}
-
-// Merge two clusters
-void Cluster::merge(Cluster c, double min) {
-    for (int i = 0; i < c.seqs.size(); i++) {
-        this->seqs.push_back(c.seqs[i]);
-    }
-
-    // set up merge of clusters
-    dist = min/2;
-    oldNames = {};
-    oldNames.push_back(name);
-    oldNames.push_back(c.name);
-    name = strip(name);
-    c.name = strip(c.name);
-    name += "/" + c.name;
-
-    string printName = "";
-    for (int i = 0; i < name.size(); i++) {
-
-        if (i == 0) {
-            printName += name[i];
-        } else if (name[i] != 'S' and name[i] != '/') {
-            printName += name[i];
-        }
-    }
-
-    printString += (printName + ":" + to_string(dist) + "\n");
-
-    ofstream out2("3.02");
-    if (out2.is_open()) {
-        out2 << printString;
-
-        out2.close();
-    }
-}
-
-// remove sentinel value from cluster name
-string Cluster::strip(string s) {
-    string newS = "";
-    for (int i = 0; i < s.size(); i++ ) {
-        if (s[i] != '/') {
-            newS += s[i];
-        }
-    }
-    return newS;
-}
-
-// Split cluster into two sub clusters
-vector<string> Cluster::split() {
-    vector<string> names;
-    int sentInd = name.find('/');
-
-    names.push_back(name.substr(0, sentInd));
-    names.push_back(name.substr(sentInd + 1));
-
-    return names;
-}
-
-// Overloaded Cluster ==
-bool Cluster::operator==(const Cluster &c) const {
-    return name == c.name;
-}
-
 // Tree constructor
 Tree::Tree(vector<Cluster> &clusters) : newClusters(clusters){
     populate();
@@ -136,13 +48,13 @@ void Tree::calculateInitial() {
     if (out1.is_open()) {
         out1 << "- ";
         for (int i = 0; i < newClusters.size(); i++) {
-            out1 << newClusters[i].name << " ";
+            out1 << newClusters[i].getName() << " ";
         }
         out1 << "\n";
         for (int i = 0; i < newDistanceMatrix.size(); i++) {
             for (int j = 0; j < newDistanceMatrix[0].size(); j++) {
                 if (j == 0) {
-                    out1 << newClusters[i].name << " ";
+                    out1 << newClusters[i].getName() << " ";
                 }
                 out1 << newDistanceMatrix[i][j] << " ";
             }
@@ -200,15 +112,15 @@ const double Tree::compare(Cluster c1, Cluster c2) {
     vector<string> names;
 
     // bit redundant
-    if (c1.seqs.size() == 1 and c2.seqs.size() == 1) {
-        for (int i = 0; i < c1.seqs[0].str.size(); i++) {
-            if (c1.seqs[0].str.at(i) != c2.seqs[0].str.at(i)) {
+    if (c1.getSeqs().size() == 1 and c2.getSeqs().size() == 1) {
+        for (int i = 0; i < c1.getSeqs()[0].str.size(); i++) {
+            if (c1.getSeqs()[0].str.at(i) != c2.getSeqs()[0].str.at(i)) {
                 ++distance;
             }
         }
     } else {
-        c1Ind = contains(c1.name);
-        c2Ind = contains(c2.name);
+        c1Ind = contains(c1.getName());
+        c2Ind = contains(c2.getName());
 
         // both contained in old clusters/matrix
         if (c1Ind != -1 and c2Ind != -1) {
@@ -217,15 +129,15 @@ const double Tree::compare(Cluster c1, Cluster c2) {
 
         // 1 not 2 contained in old clusters/matrix
         else if (c1Ind != -1) {
-            c2Inda = contains(c2.oldNames[0]);
-            c2Indb = contains(c2.oldNames[0]);
+            c2Inda = contains(c2.getOldNames()[0]);
+            c2Indb = contains(c2.getOldNames()[0]);
             return (oldDistanceMatrix[c1Ind][c2Inda] + oldDistanceMatrix[c1Ind][c2Indb])/2;
         }
 
         // 2 not 1 contained in old clusters/matrix
         else if (c2Ind != -1) {
-            c1Inda = contains(c1.oldNames[0]);
-            c1Indb = contains(c1.oldNames[1]);
+            c1Inda = contains(c1.getOldNames()[0]);
+            c1Indb = contains(c1.getOldNames()[1]);
             return (oldDistanceMatrix[c1Inda][c2Ind] + oldDistanceMatrix[c1Indb][c2Ind])/2;
         }  else {
             cout << "no" << endl;
@@ -237,7 +149,7 @@ const double Tree::compare(Cluster c1, Cluster c2) {
 // Check to see if cluster has already been used in the old matrix
 int Tree::contains(string name) {
     for (int i = 0; i < oldClusters.size(); i++) {
-        if (oldClusters[i].name == name) {
+        if (oldClusters[i].getName() == name) {
             return i;
         }
     }
@@ -245,7 +157,7 @@ int Tree::contains(string name) {
 }
 
 void Tree::group() {
-    double min = newClusters[0].seqs[0].str.size();
+    double min = newClusters[0].getSeqs()[0].str.size();
     int row;
     int col;
     double score;
@@ -273,7 +185,7 @@ ostream &operator<<(ostream &os, const Tree &tree) {
 
     os << "    ";
     for (int i = 0; i < tree.newClusters.size(); i++) {
-        os << tree.newClusters[i].name << " ";
+        os << tree.newClusters[i].getName() << " ";
 
     }
     os << endl;
@@ -282,7 +194,7 @@ ostream &operator<<(ostream &os, const Tree &tree) {
         for (int j = 0; j < tree.newDistanceMatrix[i].size(); j++) {
             if (j == 0) {
                 // throws BAD_EXEC exception
-                os << tree.newClusters[i].name << " ";
+                os << tree.newClusters[i].getName() << " ";
             }
             os  << tree.newDistanceMatrix[i][j] << " ";
         }
